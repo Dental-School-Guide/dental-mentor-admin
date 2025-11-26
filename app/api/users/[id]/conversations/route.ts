@@ -3,11 +3,11 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createAdminClient()
-    const userId = params.id
+    const { id: userId } = await params
 
     // Delete all conversations for this user
     const { error } = await supabase
