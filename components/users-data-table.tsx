@@ -13,7 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal, Trash, Trash2 } from "lucide-react"
+import { ChevronDown, MoreHorizontal, Trash, Trash2 } from "lucide-react"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 import { toast } from "sonner"
 
@@ -67,10 +67,10 @@ function ActionsCell({ user }: { user: User }) {
         setDeleteUserOpen(false)
         window.location.reload()
       } else {
-        const error = await response.json()
-        toast.error(error.error || 'Failed to delete user')
+        const errorData = await response.json()
+        toast.error(errorData.error || 'Failed to delete user')
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete user')
     } finally {
       setDeleteLoading(false)
@@ -89,10 +89,10 @@ function ActionsCell({ user }: { user: User }) {
         setDeleteConversationsOpen(false)
         window.location.reload()
       } else {
-        const error = await response.json()
-        toast.error(error.error || 'Failed to delete conversations')
+        const errorData = await response.json()
+        toast.error(errorData.error || 'Failed to delete conversations')
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete conversations')
     } finally {
       setDeleteLoading(false)
@@ -192,7 +192,7 @@ function ActionsCell({ user }: { user: User }) {
 export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "email",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="font-semibold text-sm px-2">Email</div>
       )
@@ -202,7 +202,7 @@ export const columns: ColumnDef<User>[] = [
   },
   {
     accessorKey: "created_at",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="font-semibold text-sm px-2">Created At</div>
       )
@@ -223,7 +223,7 @@ export const columns: ColumnDef<User>[] = [
   },
   {
     accessorKey: "last_sign_in_at",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="font-semibold text-sm px-2">Last Sign In</div>
       )

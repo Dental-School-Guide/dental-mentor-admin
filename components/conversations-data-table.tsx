@@ -13,16 +13,10 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, Eye } from "lucide-react"
+import { Eye } from "lucide-react"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import {
   Table,
@@ -32,7 +26,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { BulkDeleteConversationsButton } from "@/components/bulk-delete-conversations-button"
 
 export type Conversation = {
@@ -41,7 +34,7 @@ export type Conversation = {
   user_id: string
   user_email?: string | null
   title: string
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   created_at: string
   updated_at: string
 }

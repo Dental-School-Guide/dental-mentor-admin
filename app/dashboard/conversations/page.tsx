@@ -33,7 +33,7 @@ export default async function ConversationsPage() {
   }
 
   // Fetch all auth users to map user_id to email
-  const { data: { users }, error: usersError } = await adminClient.auth.admin.listUsers()
+  const { data: { users } } = await adminClient.auth.admin.listUsers()
   
   // Create a map of user_id to email
   const userEmailMap = new Map(

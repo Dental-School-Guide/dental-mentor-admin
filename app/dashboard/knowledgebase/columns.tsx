@@ -151,7 +151,7 @@ function ActionsCell({ lesson }: { lesson: StudentLesson }) {
 export const columns: ColumnDef<StudentLesson>[] = [
   {
     accessorKey: "context_name",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="font-semibold text-sm px-2">Lesson Name</div>
       )
@@ -165,7 +165,7 @@ export const columns: ColumnDef<StudentLesson>[] = [
   },
   {
     accessorKey: "context_type",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="font-semibold text-sm px-2">Type</div>
       )
@@ -184,7 +184,7 @@ export const columns: ColumnDef<StudentLesson>[] = [
   },
   {
     accessorKey: "link",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="font-semibold text-sm px-2">Lesson Link</div>
       )
@@ -209,7 +209,7 @@ export const columns: ColumnDef<StudentLesson>[] = [
   },
   {
     accessorKey: "embeddingStatus",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="font-semibold text-sm px-2 text-center">Status</div>
       )
@@ -231,7 +231,7 @@ export const columns: ColumnDef<StudentLesson>[] = [
   },
   {
     accessorKey: "updated_at",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="font-semibold text-sm px-2">Updated At</div>
       )
@@ -249,7 +249,7 @@ export const columns: ColumnDef<StudentLesson>[] = [
   },
   {
     id: "actions",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="font-semibold text-sm text-center px-2">Actions</div>
       )

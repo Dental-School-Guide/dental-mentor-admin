@@ -1,19 +1,23 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { MarkdownContent } from "@/components/markdown-content"
 import { DeleteConversationButton } from "@/components/delete-conversation-button"
 
+type MessagePart = {
+  text?: string
+  [key: string]: unknown
+}
+
 type Message = {
   conversation_id: string
   message_id: string
   user_id: string
   role: string
-  parts: any
-  metadata: any
+  parts: string | MessagePart[] | { text?: string; [key: string]: unknown }
+  metadata: Record<string, unknown>
   format_version: number
   created_at: string
 }
@@ -205,10 +209,10 @@ export default async function ConversationDetailPage({
                   messageText = message.parts
                 } else if (Array.isArray(message.parts)) {
                   messageText = message.parts
-                    .map((part: any) => part.text || JSON.stringify(part))
+                    .map((part: MessagePart) => part.text || JSON.stringify(part))
                     .join("\n")
                 } else if (message.parts && typeof message.parts === "object") {
-                  messageText = (message.parts as any).text || JSON.stringify(message.parts, null, 2)
+                  messageText = message.parts.text || JSON.stringify(message.parts, null, 2)
                 }
 
                 return (
