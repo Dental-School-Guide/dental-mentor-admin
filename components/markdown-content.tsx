@@ -36,8 +36,8 @@ export function MarkdownContent({ content, className }: MarkdownContentProps) {
         ),
         li: ({ ...props }) => <li className="ml-2" {...props} />,
         // Code
-        code: ({ ...props }: { inline?: boolean; [key: string]: unknown }) =>
-          props.inline ? (
+        code: ({ inline, ...props }: React.HTMLAttributes<HTMLElement> & { inline?: boolean }) =>
+          inline ? (
             <code
               className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono"
               {...props}
