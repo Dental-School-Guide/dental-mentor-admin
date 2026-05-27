@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,29 +14,30 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const router = useRouter()
   const supabase = createClient()
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    setSuccess(false)
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      })
+      // Triggers Supabase recovery email. With the email template set to
+      // include {{ .Token }}, the user receives a 6-digit OTP they enter on
+      // the next screen.
+      const { error } = await supabase.auth.resetPasswordForEmail(email)
 
       if (error) {
         setError(error.message)
+        setLoading(false)
         return
       }
 
-      setSuccess(true)
+      // Carry the email to the reset page so the user only has to type the OTP.
+      router.push(`/reset-password?email=${encodeURIComponent(email)}`)
     } catch {
       setError("An unexpected error occurred")
-    } finally {
       setLoading(false)
     }
   }
@@ -44,59 +46,44 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
+          <CardTitle className="text-2xl font-bold">Forgot Password?</CardTitle>
           <CardDescription>
-            Enter your email address and we&apos;ll send you a link to reset your password
+            Enter your email and we&apos;ll send you a 6-digit code to reset your password
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {success ? (
-            <div className="space-y-4">
-              <div className="rounded-md bg-green-50 dark:bg-green-950 p-4 text-sm text-green-800 dark:text-green-200">
-                <p className="font-medium mb-1">Check your email</p>
-                <p>We&apos;ve sent a password reset link to {email}</p>
-              </div>
-              <Link href="/login">
-                <Button variant="outline" className="w-full">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Login
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <form onSubmit={handleResetPassword} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-              </div>
-              {error && (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                  {error}
-                </div>
-              )}
-              <Button 
-                type="submit" 
-                className="w-full bg-yellow-500 hover:bg-yellow-600 text-black" 
+          <form onSubmit={handleResetPassword} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="admin@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 disabled={loading}
-              >
-                {loading ? "Sending..." : "Send Reset Link"}
+              />
+            </div>
+            {error && (
+              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                {error}
+              </div>
+            )}
+            <Button
+              type="submit"
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
+              disabled={loading}
+            >
+              {loading ? "Sending code..." : "Send reset code"}
+            </Button>
+            <Link href="/login">
+              <Button variant="ghost" className="w-full" type="button">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Login
               </Button>
-              <Link href="/login">
-                <Button variant="ghost" className="w-full" type="button">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Login
-                </Button>
-              </Link>
-            </form>
-          )}
+            </Link>
+          </form>
         </CardContent>
       </Card>
     </div>
