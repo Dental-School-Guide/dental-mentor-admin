@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { BookOpen, Users, MessageSquare, LogOut } from "lucide-react"
+import { BookOpen, Users, MessageSquare, ThumbsUp, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -23,6 +23,11 @@ const navItems = [
     title: "Conversations",
     href: "/dashboard/conversations",
     icon: MessageSquare,
+  },
+  {
+    title: "Feedback",
+    href: "/dashboard/feedback",
+    icon: ThumbsUp,
   },
 ]
 
