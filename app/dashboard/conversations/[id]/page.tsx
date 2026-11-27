@@ -231,6 +231,10 @@ export default async function ConversationDetailPage({
                         <span className="text-xs font-semibold">
                           {message.role}
                         </span>
+                        {message.metadata?.feedback === "up" && <span title="Student rated this helpful">👍</span>}
+                        {message.metadata?.feedback === "down" && (
+                          <span title={typeof message.metadata?.feedback_comment === "string" && message.metadata.feedback_comment ? `Student: ${message.metadata.feedback_comment}` : "Student rated this not helpful"}>👎</span>
+                        )}
                         <span className="text-xs opacity-70">
                           {new Date(message.created_at).toLocaleString("en-US", {
                             month: "short",
