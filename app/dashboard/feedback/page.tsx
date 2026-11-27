@@ -15,7 +15,7 @@ type Row = {
   user_id: string
   role: string
   parts: string | MessagePart[] | MessagePart | null
-  metadata: { feedback?: Rating; feedback_comment?: string; feedback_at?: string } | null
+  metadata: { feedback?: Rating; feedback_comment?: string; feedback_reasons?: string[]; feedback_at?: string } | null
   created_at: string
 }
 
@@ -64,6 +64,12 @@ export default async function FeedbackPage({
   const downs = rows.filter((r) => r.metadata?.feedback === "down").length
   const total = ups + downs
   const helpful = total ? Math.round((ups / total) * 100) : null
+  const reasonCounts = new Map<string, number>()
+  for (const r of rows) {
+    if (r.metadata?.feedback !== "down") continue
+    for (const reason of r.metadata.feedback_reasons || []) reasonCounts.set(reason, (reasonCounts.get(reason) || 0) + 1)
+  }
+  const topReasons = [...reasonCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5)
 
   const shown = rows
     .filter((r) => filter === "all" || r.metadata?.feedback === filter)
@@ -117,6 +123,13 @@ export default async function FeedbackPage({
           <CardContent className="text-3xl font-bold">{downs}</CardContent></Card>
       </div>
 
+      {topReasons.length > 0 && (
+        <div className="px-2 text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">Top 👎 reasons: </span>
+          {topReasons.map(([reason, count]) => `${reason} (${count})`).join(" · ")}
+        </div>
+      )}
+
       <div className="px-2 flex gap-2">
         {tab("down", `👎 Not helpful (${downs})`)}
         {tab("up", `👍 Helpful (${ups})`)}
@@ -140,6 +153,13 @@ export default async function FeedbackPage({
                   Open conversation →
                 </Link>
               </div>
+              {Array.isArray(r.metadata?.feedback_reasons) && r.metadata.feedback_reasons.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {r.metadata.feedback_reasons.map((reason) => (
+                    <Badge key={reason} variant="secondary">{reason}</Badge>
+                  ))}
+                </div>
+              )}
               {r.metadata?.feedback_comment && (
                 <div className="rounded-md border border-red-600/40 bg-red-600/10 p-3 text-sm">
                   <span className="font-semibold">Student&apos;s note: </span>{r.metadata.feedback_comment}
