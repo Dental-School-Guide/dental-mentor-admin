@@ -3,6 +3,9 @@ import { Link as LinkIcon } from "lucide-react"
 import { columns, StudentLesson } from "./columns"
 import { DataTable } from "./data-table"
 import { AddLessonDialog } from "./add-lesson-dialog"
+import { ReEmbedAllButton } from "./reembed-all-button"
+
+const CURRENT_EMBEDDING_MODEL = "gemini-embedding-001"
 
 async function getStudentLessons(): Promise<StudentLesson[]> {
   const supabase = await createClient()
@@ -17,17 +20,33 @@ async function getStudentLessons(): Promise<StudentLesson[]> {
     return []
   }
 
-  // Check embedding status for each lesson
+  // Check embedding status for each lesson.
+  // Embeddings made before the switch to gemini-embedding-001 (late May 2026)
+  // can't be matched by the chatbot's search, so they count as "outdated".
   const lessonsWithStatus = await Promise.all(
     (data || []).map(async (lesson) => {
       const { count } = await supabase
         .from('context_embeddings')
         .select('*', { count: 'exact', head: true })
         .eq('context_id', lesson.id)
-      
+
+      if (!count) {
+        return { ...lesson, embeddingStatus: 'needs_embedding' as const, lastEmbeddedAt: null }
+      }
+
+      const { data: sample } = await supabase
+        .from('context_embeddings')
+        .select('metadata')
+        .eq('context_id', lesson.id)
+        .limit(1)
+
+      const metadata = (sample?.[0]?.metadata ?? {}) as { embedding_model?: string; embedded_at?: string }
+      const isCurrent = metadata.embedding_model === CURRENT_EMBEDDING_MODEL
+
       return {
         ...lesson,
-        embeddingStatus: (count && count > 0) ? 'embedded' : 'needs_embedding'
+        embeddingStatus: isCurrent ? ('embedded' as const) : ('outdated' as const),
+        lastEmbeddedAt: metadata.embedded_at ?? null,
       }
     })
   )
@@ -60,7 +79,10 @@ export default async function KnowledgeBasePage() {
               Manage context links and resources. Use the Feed action to extract and embed content for RAG.
             </p>
           </div>
-          <AddLessonDialog />
+          <div className="flex items-center gap-2">
+            <ReEmbedAllButton lessons={studentLessons} />
+            <AddLessonDialog />
+          </div>
         </div>
         <DataTable columns={columns} data={studentLessons} />
       </div>

@@ -81,13 +81,27 @@ export async function deleteLesson(id: string) {
   return { success: true }
 }
 
+/** Replace the DSG member email/password with placeholders before logging. */
+function redactSecrets(value: unknown): string {
+  let text = typeof value === "string" ? value : JSON.stringify(value)
+  const secrets = [process.env.DENTAL_SCHOOL_PASSWORD, process.env.DENTAL_SCHOOL_EMAIL]
+  for (const secret of secrets) {
+    if (secret) text = text.split(secret).join("[redacted]")
+  }
+  return text
+}
+
+/** Embedding model used by the chatbot's retriever. Keep in sync with lib/embeddings/google-embeddings.ts. */
+const CURRENT_EMBEDDING_MODEL = "gemini-embedding-001"
+
 export async function feedLesson(lessonId: string, lessonUrl: string) {
   const stagehand = new Stagehand({
     env: "BROWSERBASE",
     apiKey: process.env.BROWSERBASE_API_KEY,
     projectId: process.env.BROWSERBASE_PROJECT_ID,
     verbose: 1,
-    logger: console.log,
+    // Redact the member login so it never appears in Vercel logs
+    logger: (line: unknown) => console.log(redactSecrets(line)),
     disablePino: true,
     model: "google/gemini-2.5-flash",
   })
@@ -133,7 +147,7 @@ export async function feedLesson(lessonId: string, lessonUrl: string) {
             maxSteps: 5,
           });
 
-          console.log("Click login result:", clickLoginResult.message);
+          console.log("Click login result:", redactSecrets(clickLoginResult.message));
 
           // Wait for navigation to login page
           await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -148,7 +162,7 @@ export async function feedLesson(lessonId: string, lessonUrl: string) {
             maxSteps: 10,
           });
 
-          console.log("Login result:", loginResult.message);
+          console.log("Login result:", redactSecrets(loginResult.message));
           console.log("Login completed:", loginResult.completed);
 
           // Wait after login and navigate back to lesson page
@@ -245,6 +259,8 @@ export async function feedLesson(lessonId: string, lessonUrl: string) {
       chunk_index: index,
       embedding: JSON.stringify(embeddings[index]),
       metadata: {
+        embedding_model: CURRENT_EMBEDDING_MODEL,
+        embedded_at: new Date().toISOString(),
         title: extractedContent.title,
         section_count: extractedContent.sections.length,
         chunk_length: chunk.length,

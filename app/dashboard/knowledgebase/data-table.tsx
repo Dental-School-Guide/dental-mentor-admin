@@ -100,6 +100,7 @@ export function DataTable<TData, TValue>({
           <SelectContent>
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="embedded">Embedded</SelectItem>
+            <SelectItem value="outdated">Outdated</SelectItem>
             <SelectItem value="needs_embedding">Need to Embed</SelectItem>
           </SelectContent>
         </Select>
