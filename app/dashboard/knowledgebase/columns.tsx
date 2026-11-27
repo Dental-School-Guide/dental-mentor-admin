@@ -26,7 +26,8 @@ export type StudentLesson = {
   link: string
   context_type: string
   updated_at: string
-  embeddingStatus: 'embedded' | 'needs_embedding'
+  embeddingStatus: 'embedded' | 'outdated' | 'needs_embedding'
+  lastEmbeddedAt: string | null
 }
 
 function ActionsCell({ lesson }: { lesson: StudentLesson }) {
@@ -216,13 +217,20 @@ export const columns: ColumnDef<StudentLesson>[] = [
     },
     cell: ({ row }) => {
       const status = row.getValue("embeddingStatus") as string
+      const styles: Record<string, { label: string; className: string }> = {
+        embedded: { label: "Embedded", className: "bg-green-600 hover:bg-green-700" },
+        outdated: { label: "Outdated", className: "bg-orange-600 hover:bg-orange-700" },
+        needs_embedding: { label: "Need to Embed", className: "bg-yellow-600 hover:bg-yellow-700" },
+      }
+      const style = styles[status] ?? styles.needs_embedding
       return (
         <div className="px-2 py-3 flex justify-center">
-          <Badge 
+          <Badge
             variant={status === "embedded" ? "default" : "secondary"}
-            className={status === "embedded" ? "bg-green-600 hover:bg-green-700 whitespace-nowrap" : "bg-yellow-600 hover:bg-yellow-700 whitespace-nowrap"}
+            className={`${style.className} whitespace-nowrap`}
+            title={status === "outdated" ? "Embedded with an old model. Re-embed so the chatbot can find it." : undefined}
           >
-            {status === "embedded" ? "Embedded" : "Need to Embed"}
+            {style.label}
           </Badge>
         </div>
       )
@@ -230,10 +238,32 @@ export const columns: ColumnDef<StudentLesson>[] = [
     size: 130,
   },
   {
+    accessorKey: "lastEmbeddedAt",
+    header: () => {
+      return (
+        <div className="font-semibold text-sm px-2">Last Embedded</div>
+      )
+    },
+    cell: ({ row }) => {
+      const value = row.getValue("lastEmbeddedAt") as string | null
+      if (!value) {
+        return <div className="text-sm px-2 py-3 text-muted-foreground">—</div>
+      }
+      const date = new Date(value)
+      return (
+        <div className="text-sm px-2 py-3">
+          <div className="font-medium whitespace-nowrap">{format(date, "MMM dd, yyyy")}</div>
+          <div className="text-muted-foreground text-xs whitespace-nowrap">{format(date, "HH:mm")}</div>
+        </div>
+      )
+    },
+    size: 120,
+  },
+  {
     accessorKey: "updated_at",
     header: () => {
       return (
-        <div className="font-semibold text-sm px-2">Updated At</div>
+        <div className="font-semibold text-sm px-2">Last Edited</div>
       )
     },
     cell: ({ row }) => {
